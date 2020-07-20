@@ -1,0 +1,13 @@
+[Desktop Entry]
+Encoding=UTF-8
+Name=BYTN Core
+Comment=BYTN P2P Cryptocurrency
+Comment[de]=Verbinde mit dem BYTN peer-to-peer Netzwerk
+Comment[fr]=BYTN, monnaie virtuelle cryptographique pair à pair
+Comment[tr]=BYTN, eşten eşe kriptografik sanal para birimi
+Exec=bytn-qt %u
+Terminal=false
+Type=Application
+Icon=bytn128
+MimeType=x-scheme-handler/bytn;
+Categories=Office;Finance;

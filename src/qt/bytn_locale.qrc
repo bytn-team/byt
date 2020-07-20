@@ -1,0 +1,25 @@
+<!DOCTYPE RCC><RCC version="1.0">
+    <qresource prefix="/translations">
+        <file alias="ar">locale/bytn_ar.qm</file>
+        <file alias="bg">locale/bytn_bg.qm</file>
+        <file alias="de">locale/bytn_de.qm</file>
+        <file alias="en">locale/bytn_en.qm</file>
+        <file alias="es">locale/bytn_es.qm</file>
+        <file alias="fi">locale/bytn_fi.qm</file>
+        <file alias="fr">locale/bytn_fr.qm</file>
+        <file alias="it">locale/bytn_it.qm</file>
+        <file alias="ja">locale/bytn_ja.qm</file>
+        <file alias="ko">locale/bytn_ko.qm</file>
+        <file alias="nl">locale/bytn_nl.qm</file>
+        <file alias="pl">locale/bytn_pl.qm</file>
+        <file alias="pt">locale/bytn_pt.qm</file>
+        <file alias="ru">locale/bytn_ru.qm</file>
+        <file alias="sk">locale/bytn_sk.qm</file>
+        <file alias="sv">locale/bytn_sv.qm</file>
+        <file alias="th">locale/bytn_th.qm</file>
+        <file alias="tr">locale/bytn_tr.qm</file>
+        <file alias="vi">locale/bytn_vi.qm</file>
+        <file alias="zh_CN">locale/bytn_zh_CN.qm</file>
+        <file alias="zh_TW">locale/bytn_zh_TW.qm</file>
+    </qresource>
+</RCC>

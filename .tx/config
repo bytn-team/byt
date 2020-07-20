@@ -1,0 +1,7 @@
+[main]
+host = https://www.transifex.com
+
+[bytn.qt-translation-012x]
+file_filter = src/qt/locale/bytn_<lang>.ts
+source_file = src/qt/locale/bytn_en.ts
+source_lang = en
