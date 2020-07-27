@@ -1,11 +1,13 @@
-BYTN Core 0.14.0
-=====================
+BYTN Core
+=============
 
-This is the official reference wallet for BYTN digital currency and comprises the backbone of the BYTN peer-to-peer network. You can [download BYTN Core](https://www.bytn.org/downloads/) or [build it yourself](#building) using the guides below.
+Setup
+---------------------
+[BYTN Core](http://bytn.org/wallet) is the original BYTN client and it builds the backbone of the network. However, it downloads and stores the entire history of BYTN transactions; depending on the speed of your computer and network connection, the synchronization process can take anywhere from a few hours to a day or more. Thankfully you only have to do this once.
 
 Running
 ---------------------
-The following are some helpful notes on how to run BYTN on your native platform.
+The following are some helpful notes on how to run BYTN Core on your native platform.
 
 ### Unix
 
@@ -18,57 +20,50 @@ Unpack the files into a directory and run:
 
 Unpack the files into a directory, and then run bytn-qt.exe.
 
-### OS X
+### macOS
 
 Drag BYTN-Qt to your applications folder, and then run BYTN-Qt.
 
 ### Need Help?
 
-* See the [BYTN documentation](https://docs.bytn.org)
+* See the documentation at the [BYTN Wiki](https://github.com/BYTN-Project/BYTN/wiki)
 for help and more information.
-* See the [BYTN Developer Documentation](https://bytn-docs.github.io/) 
-for technical specifications and implementation details.
-* Ask for help on [BYTN Nation Discord](http://bytnchat.org)
-* Ask for help on the [BYTN Forum](https://bytn.org/forum)
+* Ask for help on [BitcoinTalk](https://bitcointalk.org/index.php?topic=1262920.0) or on the [BYTN Forum](http://forum.bytn.org/).
+* Join our Discord server [Discord Server](https://discord.bytn.org)
 
 Building
 ---------------------
 The following are developer notes on how to build BYTN Core on your native platform. They are not complete guides, but include notes on the necessary libraries, compile flags, etc.
 
-- [OS X Build Notes](build-osx.md)
+- [Dependencies](dependencies.md)
+- [macOS Build Notes](build-osx.md)
 - [Unix Build Notes](build-unix.md)
 - [Windows Build Notes](build-windows.md)
-- [OpenBSD Build Notes](build-openbsd.md)
 - [Gitian Building Guide](gitian-building.md)
 
 Development
 ---------------------
-The BYTN Core repo's [root README](/README.md) contains relevant information on the development process and automated testing.
+The BYTN repo's [root README](/README.md) contains relevant information on the development process and automated testing.
 
 - [Developer Notes](developer-notes.md)
+- [Multiwallet Qt Development](multiwallet-qt.md)
 - [Release Notes](release-notes.md)
 - [Release Process](release-process.md)
-- Source Code Documentation ***TODO***
+- [Source Code Documentation (External Link)](https://www.fuzzbawls.pw/bytn/doxygen/)
 - [Translation Process](translation_process.md)
-- [Translation Strings Policy](translation_strings_policy.md)
-- [Travis CI](travis-ci.md)
+- [Unit Tests](unit-tests.md)
 - [Unauthenticated REST Interface](REST-interface.md)
-- [Shared Libraries](shared-libraries.md)
-- [BIPS](bips.md)
 - [Dnsseed Policy](dnsseed-policy.md)
-- [Benchmarking](benchmarking.md)
 
 ### Resources
-* Discuss on the [BYTN Forum](https://bytn.org/forum), in the Development & Technical Discussion board.
-* Discuss on [BYTN Nation Discord](http://bytnchat.org)
+* Discuss on the [BitcoinTalk](https://bitcointalk.org/index.php?topic=1262920.0) or the [BYTN](http://forum.bytn.org/) forum.
+* Join the [BYTN Discord](https://discord.bytn.org).
 
 ### Miscellaneous
 - [Assets Attribution](assets-attribution.md)
 - [Files](files.md)
-- [Reduce Traffic](reduce-traffic.md)
 - [Tor Support](tor.md)
 - [Init Scripts (systemd/upstart/openrc)](init.md)
-- [ZMQ](zmq.md)
 
 License
 ---------------------

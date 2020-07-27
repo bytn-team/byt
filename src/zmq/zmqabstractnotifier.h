@@ -8,8 +8,6 @@
 #include "zmqconfig.h"
 
 class CBlockIndex;
-class CGovernanceObject;
-class CGovernanceVote;
 class CZMQAbstractNotifier;
 
 typedef CZMQAbstractNotifier* (*CZMQNotifierFactory)();
@@ -35,13 +33,8 @@ public:
     virtual void Shutdown() = 0;
 
     virtual bool NotifyBlock(const CBlockIndex *pindex);
-    virtual bool NotifyChainLock(const CBlockIndex *pindex);
     virtual bool NotifyTransaction(const CTransaction &transaction);
     virtual bool NotifyTransactionLock(const CTransaction &transaction);
-    virtual bool NotifyGovernanceVote(const CGovernanceVote &vote);
-    virtual bool NotifyGovernanceObject(const CGovernanceObject &object);
-    virtual bool NotifyInstantSendDoubleSpendAttempt(const CTransaction &currentTx, const CTransaction &previousTx);
-
 
 protected:
     void *psocket;

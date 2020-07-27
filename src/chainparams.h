@@ -1,5 +1,7 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
-// Copyright (c) 2009-2015 The Bitcoin Core developers
+// Copyright (c) 2009-2014 The Bitcoin developers
+// Copyright (c) 2014-2015 The Dash developers
+// Copyright (c) 2015-2019 The PIVX developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -7,33 +9,19 @@
 #define BITCOIN_CHAINPARAMS_H
 
 #include "chainparamsbase.h"
-#include "consensus/params.h"
+#include "checkpoints.h"
 #include "primitives/block.h"
 #include "protocol.h"
+#include "uint256.h"
 
+#include "libzerocoin/Params.h"
 #include <vector>
+
+typedef unsigned char MessageStartChars[MESSAGE_START_SIZE];
 
 struct CDNSSeedData {
     std::string name, host;
-    bool supportsServiceBitsFiltering;
-    CDNSSeedData(const std::string &strName, const std::string &strHost, bool supportsServiceBitsFilteringIn = false) : name(strName), host(strHost), supportsServiceBitsFiltering(supportsServiceBitsFilteringIn) {}
-};
-
-struct SeedSpec6 {
-    uint8_t addr[16];
-    uint16_t port;
-};
-
-typedef std::map<int, uint256> MapCheckpoints;
-
-struct CCheckpointData {
-    MapCheckpoints mapCheckpoints;
-};
-
-struct ChainTxData {
-    int64_t nTime;
-    int64_t nTxCount;
-    double dTxRate;
+    CDNSSeedData(const std::string& strName, const std::string& strHost) : name(strName), host(strHost) {}
 };
 
 /**
@@ -52,119 +40,216 @@ public:
         SECRET_KEY,     // BIP16
         EXT_PUBLIC_KEY, // BIP32
         EXT_SECRET_KEY, // BIP32
+        EXT_COIN_TYPE,  // BIP44
 
         MAX_BASE58_TYPES
     };
 
-    const Consensus::Params& GetConsensus() const { return consensus; }
-    const CMessageHeader::MessageStartChars& MessageStart() const { return pchMessageStart; }
+    const uint256& HashGenesisBlock() const { return hashGenesisBlock; }
+    const MessageStartChars& MessageStart() const { return pchMessageStart; }
     const std::vector<unsigned char>& AlertKey() const { return vAlertPubKey; }
     int GetDefaultPort() const { return nDefaultPort; }
+    const uint256& ProofOfWorkLimit() const { return bnProofOfWorkLimit; }
+    int SubsidyHalvingInterval() const { return nSubsidyHalvingInterval; }
+    /** Used to check majorities for block version upgrade */
+    int EnforceBlockUpgradeMajority() const { return nEnforceBlockUpgradeMajority; }
+    int RejectBlockOutdatedMajority() const { return nRejectBlockOutdatedMajority; }
+    int ToCheckBlockUpgradeMajority() const { return nToCheckBlockUpgradeMajority; }
+    int MaxReorganizationDepth() const { return nMaxReorganizationDepth; }
 
+    /** Used if GenerateBitcoins is called with a negative number of threads */
+    int DefaultMinerThreads() const { return nMinerThreads; }
     const CBlock& GenesisBlock() const { return genesis; }
-    const CBlock& DevNetGenesisBlock() const { return devnetGenesis; }
     /** Make miner wait to have peers to avoid wasting work */
     bool MiningRequiresPeers() const { return fMiningRequiresPeers; }
+    /** Headers first syncing is disabled */
+    bool HeadersFirstSyncingActive() const { return fHeadersFirstSyncingActive; };
     /** Default value for -checkmempool and -checkblockindex argument */
     bool DefaultConsistencyChecks() const { return fDefaultConsistencyChecks; }
-    /** Policy: Filter transactions that do not match well-defined patterns */
+    /** Allow mining of a min-difficulty block */
+    bool AllowMinDifficultyBlocks() const { return fAllowMinDifficultyBlocks; }
+    /** Skip proof-of-work check: allow mining of any difficulty block */
+    bool SkipProofOfWorkCheck() const { return fSkipProofOfWorkCheck; }
+    /** Make standard checks */
     bool RequireStandard() const { return fRequireStandard; }
-    /** Require addresses specified with "-externalip" parameter to be routable */
-    bool RequireRoutableExternalIP() const { return fRequireRoutableExternalIP; }
-    uint64_t PruneAfterHeight() const { return nPruneAfterHeight; }
+    int64_t TargetTimespan() const { return nTargetTimespan; }
+    int64_t TargetSpacing() const { return nTargetSpacing; }
+    int64_t Interval() const { return nTargetTimespan / nTargetSpacing; }
+    int COINBASE_MATURITY() const { return nMaturity; }
+    CAmount MaxMoneyOut() const { return nMaxMoneyOut; }
+    /** The masternode count that we will allow the see-saw reward payments to be off by */
+    int MasternodeCountDrift() const { return nMasternodeCountDrift; }
     /** Make miner stop after a block is found. In RPC, don't return until nGenProcLimit blocks are generated */
     bool MineBlocksOnDemand() const { return fMineBlocksOnDemand; }
-    /** Allow multiple addresses to be selected from the same network group (e.g. 192.168.x.x) */
-    bool AllowMultipleAddressesFromGroup() const { return fAllowMultipleAddressesFromGroup; }
-    /** Allow nodes with the same address and multiple ports */
-    bool AllowMultiplePorts() const { return fAllowMultiplePorts; }
+    /** In the future use NetworkIDString() for RPC fields */
+    bool TestnetToBeDeprecatedFieldRPC() const { return fTestnetToBeDeprecatedFieldRPC; }
     /** Return the BIP70 network string (main, test or regtest) */
     std::string NetworkIDString() const { return strNetworkID; }
     const std::vector<CDNSSeedData>& DNSSeeds() const { return vSeeds; }
     const std::vector<unsigned char>& Base58Prefix(Base58Type type) const { return base58Prefixes[type]; }
-    int ExtCoinType() const { return nExtCoinType; }
-    const std::vector<SeedSpec6>& FixedSeeds() const { return vFixedSeeds; }
-    const CCheckpointData& Checkpoints() const { return checkpointData; }
-    const ChainTxData& TxData() const { return chainTxData; }
-    int PoolMinParticipants() const { return nPoolMinParticipants; }
-    int PoolMaxParticipants() const { return nPoolMaxParticipants; }
-    int FulfilledRequestExpireTime() const { return nFulfilledRequestExpireTime; }
-    const std::vector<std::string>& SporkAddresses() const { return vSporkAddresses; }
-    int MinSporkKeys() const { return nMinSporkKeys; }
-    bool BIP9CheckMasternodesUpgraded() const { return fBIP9CheckMasternodesUpgraded; }
+    const std::vector<CAddress>& FixedSeeds() const { return vFixedSeeds; }
+    virtual const Checkpoints::CCheckpointData& Checkpoints() const = 0;
+    int PoolMaxTransactions() const { return nPoolMaxTransactions; }
+    /** Return the number of blocks in a budget cycle */
+    int GetBudgetCycleBlocks() const { return nBudgetCycleBlocks; }
+    int64_t GetProposalEstablishmentTime() const { return nProposalEstablishmentTime; }
+
+    /** Spork key and Masternode Handling **/
+    std::string SporkKey() const { return strSporkKey; }
+    std::string SporkKeyOld() const { return strSporkKeyOld; }
+    int64_t NewSporkStart() const { return nEnforceNewSporkKey; }
+    int64_t RejectOldSporkKey() const { return nRejectOldSporkKey; }
+    std::string ObfuscationPoolDummyAddress() const { return strObfuscationPoolDummyAddress; }
+    int64_t StartMasternodePayments() const { return nStartMasternodePayments; }
+    int64_t Budget_Fee_Confirmations() const { return nBudget_Fee_Confirmations; }
+
+    CBaseChainParams::Network NetworkID() const { return networkID; }
+
+    /** Zerocoin **/
+    std::string Zerocoin_Modulus() const { return zerocoinModulus; }
+    libzerocoin::ZerocoinParams* Zerocoin_Params(bool useModulusV1) const;
+    int Zerocoin_MaxSpendsPerTransaction() const { return nMaxZerocoinSpendsPerTransaction; }
+    int Zerocoin_MaxPublicSpendsPerTransaction() const { return nMaxZerocoinPublicSpendsPerTransaction; }
+    CAmount Zerocoin_MintFee() const { return nMinZerocoinMintFee; }
+    int Zerocoin_MintRequiredConfirmations() const { return nMintRequiredConfirmations; }
+    int Zerocoin_RequiredAccumulation() const { return nRequiredAccumulation; }
+    int Zerocoin_DefaultSpendSecurity() const { return nDefaultSecurityLevel; }
+    int Zerocoin_HeaderVersion() const { return nZerocoinHeaderVersion; }
+    int Zerocoin_RequiredStakeDepth() const { return nZerocoinRequiredStakeDepth; }
+
+    /** Height or Time Based Activations **/
+    int ModifierUpgradeBlock() const { return nModifierUpdateBlock; }
+    int LAST_POW_BLOCK() const { return nLastPOWBlock; }
+    int Zerocoin_StartHeight() const { return nZerocoinStartHeight; }
+    int Zerocoin_Block_EnforceSerialRange() const { return nBlockEnforceSerialRange; }
+    int Zerocoin_Block_RecalculateAccumulators() const { return nBlockRecalculateAccumulators; }
+    int Zerocoin_Block_FirstFraudulent() const { return nBlockFirstFraudulent; }
+    int Zerocoin_Block_LastGoodCheckpoint() const { return nBlockLastGoodCheckpoint; }
+    int Zerocoin_StartTime() const { return nZerocoinStartTime; }
+    int Block_Enforce_Invalid() const { return nBlockEnforceInvalidUTXO; }
+    int Zerocoin_Block_V2_Start() const { return nBlockZerocoinV2; }
+
+    // fake serial attack
+    int Zerocoin_Block_EndFakeSerial() const { return nFakeSerialBlockheightEnd; }
+    CAmount GetSupplyBeforeFakeSerial() const { return nSupplyBeforeFakeSerial; }
+
+    int Zerocoin_Block_Double_Accumulated() const { return nBlockDoubleAccumulated; }
+    CAmount InvalidAmountFiltered() const { return nInvalidAmountFiltered; };
+
+    int Zerocoin_Block_Public_Spend_Enabled() const { return nPublicZCSpends; }
+
 protected:
     CChainParams() {}
 
-    Consensus::Params consensus;
-    CMessageHeader::MessageStartChars pchMessageStart;
+    uint256 hashGenesisBlock;
+    MessageStartChars pchMessageStart;
     //! Raw pub key bytes for the broadcast alert signing key.
     std::vector<unsigned char> vAlertPubKey;
     int nDefaultPort;
-    uint64_t nPruneAfterHeight;
+    uint256 bnProofOfWorkLimit;
+    int nMaxReorganizationDepth;
+    int nSubsidyHalvingInterval;
+    int nEnforceBlockUpgradeMajority;
+    int nRejectBlockOutdatedMajority;
+    int nToCheckBlockUpgradeMajority;
+    int64_t nTargetTimespan;
+    int64_t nTargetSpacing;
+    int nLastPOWBlock;
+    int nMasternodeCountDrift;
+    int nMaturity;
+    int nModifierUpdateBlock;
+    CAmount nMaxMoneyOut;
+    int nMinerThreads;
     std::vector<CDNSSeedData> vSeeds;
     std::vector<unsigned char> base58Prefixes[MAX_BASE58_TYPES];
-    int nExtCoinType;
+    CBaseChainParams::Network networkID;
     std::string strNetworkID;
     CBlock genesis;
-    CBlock devnetGenesis;
-    std::vector<SeedSpec6> vFixedSeeds;
+    std::vector<CAddress> vFixedSeeds;
     bool fMiningRequiresPeers;
+    bool fAllowMinDifficultyBlocks;
     bool fDefaultConsistencyChecks;
     bool fRequireStandard;
-    bool fRequireRoutableExternalIP;
     bool fMineBlocksOnDemand;
-    bool fAllowMultipleAddressesFromGroup;
-    bool fAllowMultiplePorts;
-    CCheckpointData checkpointData;
-    ChainTxData chainTxData;
-    int nPoolMinParticipants;
-    int nPoolMaxParticipants;
-    int nFulfilledRequestExpireTime;
-    std::vector<std::string> vSporkAddresses;
-    int nMinSporkKeys;
-    bool fBIP9CheckMasternodesUpgraded;
+    bool fSkipProofOfWorkCheck;
+    bool fTestnetToBeDeprecatedFieldRPC;
+    bool fHeadersFirstSyncingActive;
+    int nPoolMaxTransactions;
+    int nBudgetCycleBlocks;
+    std::string strSporkKey;
+    std::string strSporkKeyOld;
+    int64_t nEnforceNewSporkKey;
+    int64_t nRejectOldSporkKey;
+    std::string strObfuscationPoolDummyAddress;
+    int64_t nStartMasternodePayments;
+    std::string zerocoinModulus;
+    int nMaxZerocoinSpendsPerTransaction;
+    int nMaxZerocoinPublicSpendsPerTransaction;
+    CAmount nMinZerocoinMintFee;
+    CAmount nInvalidAmountFiltered;
+    int nMintRequiredConfirmations;
+    int nRequiredAccumulation;
+    int nDefaultSecurityLevel;
+    int nZerocoinHeaderVersion;
+    int64_t nBudget_Fee_Confirmations;
+    int nZerocoinStartHeight;
+    int nZerocoinStartTime;
+    int nZerocoinRequiredStakeDepth;
+    int64_t nProposalEstablishmentTime;
+
+    int nBlockEnforceSerialRange;
+    int nBlockRecalculateAccumulators;
+    int nBlockFirstFraudulent;
+    int nBlockLastGoodCheckpoint;
+    int nBlockEnforceInvalidUTXO;
+    int nBlockZerocoinV2;
+    int nBlockDoubleAccumulated;
+    int nPublicZCSpends;
+
+    // fake serial attack
+    int nFakeSerialBlockheightEnd = 0;
+    CAmount nSupplyBeforeFakeSerial = 0;
 };
 
 /**
- * Return the currently selected parameters. This won't change after app
- * startup, except for unit tests.
+ * Modifiable parameters interface is used by test cases to adapt the parameters in order
+ * to test specific features more easily. Test cases should always restore the previous
+ * values after finalization.
  */
-const CChainParams &Params();
+
+class CModifiableParams
+{
+public:
+    //! Published setters to allow changing values in unit test cases
+    virtual void setSubsidyHalvingInterval(int anSubsidyHalvingInterval) = 0;
+    virtual void setEnforceBlockUpgradeMajority(int anEnforceBlockUpgradeMajority) = 0;
+    virtual void setRejectBlockOutdatedMajority(int anRejectBlockOutdatedMajority) = 0;
+    virtual void setToCheckBlockUpgradeMajority(int anToCheckBlockUpgradeMajority) = 0;
+    virtual void setDefaultConsistencyChecks(bool aDefaultConsistencyChecks) = 0;
+    virtual void setAllowMinDifficultyBlocks(bool aAllowMinDifficultyBlocks) = 0;
+    virtual void setSkipProofOfWorkCheck(bool aSkipProofOfWorkCheck) = 0;
+};
+
 
 /**
- * @returns CChainParams for the given BIP70 chain name.
+ * Return the currently selected parameters. This won't change after app startup
+ * outside of the unit tests.
  */
-CChainParams& Params(const std::string& chain);
+const CChainParams& Params();
+
+/** Return parameters for the given network. */
+CChainParams& Params(CBaseChainParams::Network network);
+
+/** Get modifiable network parameters (UNITTEST only) */
+CModifiableParams* ModifiableParams();
+
+/** Sets the params returned by Params() to those for the given network. */
+void SelectParams(CBaseChainParams::Network network);
 
 /**
- * Sets the params returned by Params() to those for the given BIP70 chain name.
- * @throws std::runtime_error when the chain is not supported.
+ * Looks for -regtest or -testnet and then calls SelectParams as appropriate.
+ * Returns false if an invalid combination is given.
  */
-void SelectParams(const std::string& chain);
-
-/**
- * Allows modifying the BIP9 regtest parameters.
- */
-void UpdateRegtestBIP9Parameters(Consensus::DeploymentPos d, int64_t nStartTime, int64_t nTimeout, int64_t nWindowSize, int64_t nThreshold);
-
-/**
- * Allows modifying the DIP3 activation and enforcement height
- */
-void UpdateRegtestDIP3Parameters(int nActivationHeight, int nEnforcementHeight);
-
-/**
- * Allows modifying the budget regtest parameters.
- */
-void UpdateRegtestBudgetParameters(int nMasternodePaymentsStartBlock, int nBudgetPaymentsStartBlock, int nSuperblockStartBlock);
-
-/**
- * Allows modifying the subsidy and difficulty devnet parameters.
- */
-void UpdateDevnetSubsidyAndDiffParams(int nMinimumDifficultyBlocks, int nHighSubsidyBlocks, int nHighSubsidyFactor);
-
-/**
- * Allows modifying the LLMQ type for ChainLocks.
- */
-void UpdateDevnetLLMQChainLocks(Consensus::LLMQType llmqType);
+bool SelectParamsFromCommandLine();
 
 #endif // BITCOIN_CHAINPARAMS_H

@@ -1,4 +1,5 @@
 // Copyright (c) 2015 The Bitcoin Core developers
+// Copyright (c) 2017-2018 The PIVX developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -54,10 +55,9 @@ void CScheduler::serviceQueue()
 #else
             // Some boost versions have a conflicting overload of wait_until that returns void.
             // Explicitly use a template here to avoid hitting that overload.
-            while (!shouldStop() && !taskQueue.empty()) {
-                boost::chrono::system_clock::time_point timeToWaitFor = taskQueue.begin()->first;
-                if (newTaskScheduled.wait_until<>(lock, timeToWaitFor) == boost::cv_status::timeout)
-                    break; // Exit loop after timeout, it means we reached the time of the event
+            while (!shouldStop() && !taskQueue.empty() &&
+                   newTaskScheduled.wait_until<>(lock, taskQueue.begin()->first) != boost::cv_status::timeout) {
+                // Keep waiting until timeout
             }
 #endif
             // If there are multiple threads, the queue can empty while we're waiting (another
@@ -104,20 +104,20 @@ void CScheduler::schedule(CScheduler::Function f, boost::chrono::system_clock::t
     newTaskScheduled.notify_one();
 }
 
-void CScheduler::scheduleFromNow(CScheduler::Function f, int64_t deltaMilliSeconds)
+void CScheduler::scheduleFromNow(CScheduler::Function f, int64_t deltaSeconds)
 {
-    schedule(f, boost::chrono::system_clock::now() + boost::chrono::milliseconds(deltaMilliSeconds));
+    schedule(f, boost::chrono::system_clock::now() + boost::chrono::seconds(deltaSeconds));
 }
 
-static void Repeat(CScheduler* s, CScheduler::Function f, int64_t deltaMilliSeconds)
+static void Repeat(CScheduler* s, CScheduler::Function f, int64_t deltaSeconds)
 {
     f();
-    s->scheduleFromNow(boost::bind(&Repeat, s, f, deltaMilliSeconds), deltaMilliSeconds);
+    s->scheduleFromNow(boost::bind(&Repeat, s, f, deltaSeconds), deltaSeconds);
 }
 
-void CScheduler::scheduleEvery(CScheduler::Function f, int64_t deltaMilliSeconds)
+void CScheduler::scheduleEvery(CScheduler::Function f, int64_t deltaSeconds)
 {
-    scheduleFromNow(boost::bind(&Repeat, this, f, deltaMilliSeconds), deltaMilliSeconds);
+    scheduleFromNow(boost::bind(&Repeat, this, f, deltaSeconds), deltaSeconds);
 }
 
 size_t CScheduler::getQueueInfo(boost::chrono::system_clock::time_point &first,

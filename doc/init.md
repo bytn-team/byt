@@ -10,14 +10,14 @@ can be found in the contrib/init folder.
     contrib/init/bytnd.conf:       Upstart service configuration file
     contrib/init/bytnd.init:       CentOS compatible SysV style init script
 
-1. Service User
+Service User
 ---------------------------------
 
-All three Linux startup configurations assume the existence of a "bytncore" user
+All three Linux startup configurations assume the existence of a "bytn" user
 and group.  They must be created before attempting to use these scripts.
-The OS X configuration assumes bytnd will be set up for the current user.
+The macOS configuration assumes bytnd will be set up for the current user.
 
-2. Configuration
+Configuration
 ---------------------------------
 
 At a bare minimum, bytnd requires that the rpcpassword setting be set
@@ -44,38 +44,54 @@ This allows for running bytnd without having to do any manual configuration.
 relative to the data directory. `wallet` *only* supports relative paths.
 
 For an example configuration file that describes the configuration settings,
-see `contrib/debian/examples/bytn.conf`.
+see contrib/debian/examples/bytn.conf.
 
-3. Paths
+Paths
 ---------------------------------
 
-3a) Linux
+### Linux
 
 All three configurations assume several paths that might need to be adjusted.
 
-Binary:              `/usr/bin/bytnd`  
-Configuration file:  `/etc/bytncore/bytn.conf`  
-Data directory:      `/var/lib/bytnd`  
-PID file:            `/var/run/bytnd/bytnd.pid` (OpenRC and Upstart) or `/var/lib/bytnd/bytnd.pid` (systemd)  
-Lock file:           `/var/lock/subsys/bytnd` (CentOS)  
+Binary:              /usr/bin/bytnd
+Configuration file:  /etc/bytn/bytn.conf
+Data directory:      /var/lib/bytnd
+PID file:            `/var/run/bytnd/bytnd.pid` (OpenRC and Upstart) or `/run/bytnd/bytnd.pid` (systemd)
+Lock file:           `/var/lock/subsys/bytnd` (CentOS)
 
 The configuration file, PID directory (if applicable) and data directory
-should all be owned by the bytncore user and group.  It is advised for security
+should all be owned by the bytn user and group.  It is advised for security
 reasons to make the configuration file and data directory only readable by the
-bytncore user and group.  Access to bytn-cli and other bytnd rpc clients
+bytn user and group.  Access to bytn-cli and other bytnd rpc clients
 can then be controlled by group membership.
 
-3b) Mac OS X
+NOTE: When using the systemd .service file, the creation of the aforementioned
+directories and the setting of their permissions is automatically handled by
+systemd. Directories are given a permission of 710, giving the bytn group
+access to files under it _if_ the files themselves give permission to the
+bytn group to do so (e.g. when `-sysperms` is specified). This does not allow
+for the listing of files under the directory.
 
-Binary:              `/usr/local/bin/bytnd`  
-Configuration file:  `~/Library/Application Support/BYTNCore/bytn.conf`  
-Data directory:      `~/Library/Application Support/BYTNCore`
-Lock file:           `~/Library/Application Support/BYTNCore/.lock`
+NOTE: It is not currently possible to override `datadir` in
+`/etc/bytn/bytn.conf` with the current systemd, OpenRC, and Upstart init
+files out-of-the-box. This is because the command line options specified in the
+init files take precedence over the configurations in
+`/etc/bytn/bytn.conf`. However, some init systems have their own
+configuration mechanisms that would allow for overriding the command line
+options specified in the init files (e.g. setting `BITCOIND_DATADIR` for
+OpenRC).
 
-4. Installing Service Configuration
+### macOS
+
+Binary:              `/usr/local/bin/bytnd`
+Configuration file:  `~/Library/Application Support/BYTN/bytn.conf`
+Data directory:      `~/Library/Application Support/BYTN`
+Lock file:           `~/Library/Application Support/BYTN/.lock`
+
+Installing Service Configuration
 -----------------------------------
 
-4a) systemd
+### systemd
 
 Installing this .service file consists of just copying it to
 /usr/lib/systemd/system directory, followed by the command
@@ -84,14 +100,18 @@ Installing this .service file consists of just copying it to
 To test, run `systemctl start bytnd` and to enable for system startup run
 `systemctl enable bytnd`
 
-4b) OpenRC
+NOTE: When installing for systemd in Debian/Ubuntu the .service file needs to be copied to the /lib/systemd/system directory instead.
+
+### OpenRC
 
 Rename bytnd.openrc to bytnd and drop it in /etc/init.d.  Double
 check ownership and permissions and make it executable.  Test it with
 `/etc/init.d/bytnd start` and configure it to run on startup with
 `rc-update add bytnd`
 
-4c) Upstart (for Debian/Ubuntu based distributions)
+### Upstart (for Debian/Ubuntu based distributions)
+
+Upstart is the default init system for Debian/Ubuntu versions older than 15.04. If you are using version 15.04 or newer and haven't manually configured upstart you should follow the systemd instructions instead.
 
 Drop bytnd.conf in /etc/init.  Test by running `service bytnd start`
 it will automatically start on reboot.
@@ -99,7 +119,7 @@ it will automatically start on reboot.
 NOTE: This script is incompatible with CentOS 5 and Amazon Linux 2014 as they
 use old versions of Upstart and do not supply the start-stop-daemon utility.
 
-4d) CentOS
+### CentOS
 
 Copy bytnd.init to /etc/init.d/bytnd. Test by running `service bytnd start`.
 
@@ -107,7 +127,7 @@ Using this script, you can adjust the path and flags to the bytnd program by
 setting the BYTND and FLAGS environment variables in the file
 /etc/sysconfig/bytnd. You can also use the DAEMONOPTS environment variable here.
 
-4e) Mac OS X
+### macOS
 
 Copy org.bytn.bytnd.plist into ~/Library/LaunchAgents. Load the launch agent by
 running `launchctl load ~/Library/LaunchAgents/org.bytn.bytnd.plist`.
@@ -116,9 +136,9 @@ This Launch Agent will cause bytnd to start whenever the user logs in.
 
 NOTE: This approach is intended for those wanting to run bytnd as the current user.
 You will need to modify org.bytn.bytnd.plist if you intend to use it as a
-Launch Daemon with a dedicated bytncore user.
+Launch Daemon with a dedicated bytn user.
 
-5. Auto-respawn
+Auto-respawn
 -----------------------------------
 
 Auto respawning is currently only configured for Upstart and systemd.

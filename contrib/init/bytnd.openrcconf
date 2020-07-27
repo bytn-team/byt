@@ -1,7 +1,7 @@
 # /etc/conf.d/bytnd: config file for /etc/init.d/bytnd
 
 # Config file location
-#BITCOIND_CONFIGFILE="/etc/bytncore/bytn.conf"
+#BITCOIND_CONFIGFILE="/etc/bytn/bytn.conf"
 
 # What directory to write pidfile to?  (created and owned by $BITCOIND_USER)
 #BITCOIND_PIDDIR="/var/run/bytnd"
@@ -13,8 +13,8 @@
 #BITCOIND_DATADIR="/var/lib/bytnd"
 
 # User and group to own bytnd process
-#BITCOIND_USER="bytncore"
-#BITCOIND_GROUP="bytncore"
+#BITCOIND_USER="bytn"
+#BITCOIND_GROUP="bytn"
 
 # Path to bytnd executable
 #BITCOIND_BIN="/usr/bin/bytnd"

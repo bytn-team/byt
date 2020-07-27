@@ -33,8 +33,10 @@ buffering or reassembly.
 
 ## Prerequisites
 
-The ZeroMQ feature in BYTN Core requires ZeroMQ API version 4.x or
-newer. Typically, it is packaged by distributions as something like
+The ZeroMQ feature in BYTN Core requires the ZeroMQ API >= 4.0.0
+[libzmq](https://github.com/zeromq/libzmq/releases).
+For version information, see [dependencies.md](dependencies.md).
+Typically, it is packaged by distributions as something like
 *libzmq3-dev*. The C++ wrapper for ZeroMQ is *not* needed.
 
 In order to run the example Python client scripts in contrib/ one must
@@ -45,7 +47,7 @@ operation.
 
 By default, the ZeroMQ feature is automatically compiled in if the
 necessary prerequisites are found.  To disable, use --disable-zmq
-during the *configure* step of building bitcoind:
+during the *configure* step of building bytnd:
 
     $ ./configure --disable-zmq (other options)
 
@@ -56,20 +58,12 @@ the command line or in the configuration file.
 
 Currently, the following notifications are supported:
 
-    -zmqpubhashblock=address
-    -zmqpubhashchainlock=address
     -zmqpubhashtx=address
     -zmqpubhashtxlock=address
-    -zmqpubhashgovernancevote=address
-    -zmqpubhashgovernanceobject=address
-    -zmqpubhashinstantsenddoublespend=address
+    -zmqpubhashblock=address
     -zmqpubrawblock=address
-    -zmqpubrawchainlock=address
     -zmqpubrawtx=address
     -zmqpubrawtxlock=address
-    -zmqpubrawgovernancevote=address
-    -zmqpubrawgovernanceobject=address
-    -zmqpubrawinstantsenddoublespend=address
 
 The socket type is PUB and the address must be a valid ZeroMQ socket
 address. The same address can be used in more than one notification.
@@ -111,6 +105,6 @@ and just the tip will be notified. It is up to the subscriber to
 retrieve the chain from the last known block to the new tip.
 
 There are several possibilities that ZMQ notification can get lost
-during transmission depending on the communication type your are
-using. BYTNd appends an up-counting sequence number to each
+during transmission depending on the communication type you are
+using. bytnd appends an up-counting sequence number to each
 notification which allows listeners to detect lost notifications.

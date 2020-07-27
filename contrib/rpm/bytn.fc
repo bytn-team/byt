@@ -1,0 +1,8 @@
+/usr/bin/bytn-cli		--	gen_context(system_u:object_r:bytn_exec_t,s0)
+/usr/sbin/bytnd		--	gen_context(system_u:object_r:bytn_exec_t,s0)
+/usr/lib(64)?/bytn/bytnd		--	gen_context(system_u:object_r:bytn_exec_t,s0)
+
+/etc/bytn(/.*)?		gen_context(system_u:object_r:bytn_conf_t,s0)
+/var/lib/bytn(/.*)?		gen_context(system_u:object_r:bytn_var_lib_t,s0)
+
+(/var)?/run/bytnd(/.*)?   gen_context(system_u:object_r:bytn_var_run_t,s0)

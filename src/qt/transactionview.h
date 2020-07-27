@@ -1,4 +1,5 @@
-// Copyright (c) 2011-2015 The Bitcoin Core developers
+// Copyright (c) 2011-2014 The Bitcoin developers
+// Copyright (c) 2017-2018 The PIVX developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -7,10 +8,10 @@
 
 #include "guiutil.h"
 
-#include <QWidget>
 #include <QKeyEvent>
+#include <QWidget>
+#include <QAction>
 
-class PlatformStyle;
 class TransactionFilterProxy;
 class WalletModel;
 
@@ -34,13 +35,12 @@ class TransactionView : public QWidget
     Q_OBJECT
 
 public:
-    explicit TransactionView(const PlatformStyle *platformStyle, QWidget *parent = 0);
+    explicit TransactionView(QWidget* parent = 0);
 
-    void setModel(WalletModel *model);
+    void setModel(WalletModel* model);
 
     // Date ranges for filter
-    enum DateEnum
-    {
+    enum DateEnum {
         All,
         Today,
         ThisWeek,
@@ -51,9 +51,8 @@ public:
     };
 
     enum ColumnWidths {
-        STATUS_COLUMN_WIDTH = 30,
+        STATUS_COLUMN_WIDTH = 23,
         WATCHONLY_COLUMN_WIDTH = 23,
-        INSTANTSEND_COLUMN_WIDTH = 23,
         DATE_COLUMN_WIDTH = 120,
         TYPE_COLUMN_WIDTH = 240,
         AMOUNT_MINIMUM_COLUMN_WIDTH = 120,
@@ -61,64 +60,60 @@ public:
     };
 
 private:
-    WalletModel *model;
-    TransactionFilterProxy *transactionProxyModel;
-    QTableView *transactionView;
-    QComboBox *dateWidget;
-    QComboBox *typeWidget;
-    QComboBox *watchOnlyWidget;
-    QComboBox *instantsendWidget;
-    QLineEdit *addressWidget;
-    QLineEdit *amountWidget;
+    WalletModel* model;
+    TransactionFilterProxy* transactionProxyModel;
+    QTableView* transactionView;
+    QComboBox* dateWidget;
+    QComboBox* typeWidget;
+    QComboBox* watchOnlyWidget;
+    QLineEdit* addressWidget;
+    QLineEdit* amountWidget;
+    QAction* hideOrphansAction;
 
-    QMenu *contextMenu;
-    QSignalMapper *mapperThirdPartyTxUrls;
+    QMenu* contextMenu;
+    QSignalMapper* mapperThirdPartyTxUrls;
 
-    QFrame *dateRangeWidget;
-    QDateTimeEdit *dateFrom;
-    QDateTimeEdit *dateTo;
-    QAction *abandonAction;
+    QFrame* dateRangeWidget;
+    QDateTimeEdit* dateFrom;
+    QDateTimeEdit* dateTo;
 
-    QWidget *createDateRangeWidget();
+    QWidget* createDateRangeWidget();
 
-    GUIUtil::TableViewLastColumnResizingFixer *columnResizingFixer;
+    GUIUtil::TableViewLastColumnResizingFixer* columnResizingFixer;
 
-    virtual void resizeEvent(QResizeEvent* event) override;
+    virtual void resizeEvent(QResizeEvent* event);
 
-    bool eventFilter(QObject *obj, QEvent *event) override;
+    bool eventFilter(QObject* obj, QEvent* event);
 
-private Q_SLOTS:
-    void contextualMenu(const QPoint &);
+private slots:
+    void contextualMenu(const QPoint&);
     void dateRangeChanged();
     void showDetails();
-    void showAddressQRCode();
     void copyAddress();
     void editLabel();
     void copyLabel();
     void copyAmount();
     void copyTxID();
-    void copyTxHex();
-    void copyTxPlainText();
     void openThirdPartyTxUrl(QString url);
     void updateWatchOnlyColumn(bool fHaveWatchOnly);
-    void abandonTx();
 
-Q_SIGNALS:
+signals:
     void doubleClicked(const QModelIndex&);
 
     /**  Fired when a message should be reported to the user */
-    void message(const QString &title, const QString &message, unsigned int style);
+    void message(const QString& title, const QString& message, unsigned int style);
 
     /** Send computed sum back to wallet-view */
     void trxAmount(QString amount);
 
-public Q_SLOTS:
+public slots:
     void chooseDate(int idx);
     void chooseType(int idx);
+    void hideOrphans(bool fHide);
+    void updateHideOrphans(bool fHide);
     void chooseWatchonly(int idx);
-    void chooseInstantSend(int idx);
-    void changedPrefix(const QString &prefix);
-    void changedAmount(const QString &amount);
+    void changedPrefix(const QString& prefix);
+    void changedAmount(const QString& amount);
     void exportClicked();
     void focusTransaction(const QModelIndex&);
     void computeSum();

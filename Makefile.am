@@ -1,5 +1,4 @@
 # Copyright (c) 2013-2016 The Bitcoin Core developers
-# Copyright (c) 2014-2018 The Dash Core developers
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -10,12 +9,11 @@ SUBDIRS += doc/man
 endif
 .PHONY: deploy FORCE
 
-GZIP_ENV="-9n"
 export PYTHONPATH
 
 if BUILD_BITCOIN_LIBS
 pkgconfigdir = $(libdir)/pkgconfig
-pkgconfig_DATA = libbytnconsensus.pc
+pkgconfig_DATA = libbitcoinconsensus.pc
 endif
 
 BITCOIND_BIN=$(top_builddir)/src/$(BITCOIN_DAEMON_NAME)$(EXEEXT)
@@ -43,15 +41,24 @@ DIST_DOCS = $(wildcard doc/*.md) $(wildcard doc/release-notes/*.md)
 DIST_CONTRIB = $(top_srcdir)/contrib/bytn-cli.bash-completion \
 	       $(top_srcdir)/contrib/bytn-tx.bash-completion \
 	       $(top_srcdir)/contrib/bytnd.bash-completion \
-	       $(top_srcdir)/contrib/init
+           $(top_srcdir)/contrib/init \
+           $(top_srcdir)/contrib/install_db4.sh
+
+DIST_SHARE = \
+           $(top_srcdir)/share/genbuild.sh \
+           $(top_srcdir)/share/rpcauth
 
 BIN_CHECKS=$(top_srcdir)/contrib/devtools/symbol-check.py \
            $(top_srcdir)/contrib/devtools/security-check.py
 
-WINDOWS_PACKAGING = $(top_srcdir)/share/pixmaps/bitcoin.ico \
+WINDOWS_PACKAGING = $(top_srcdir)/share/pixmaps/bytn.ico \
   $(top_srcdir)/share/pixmaps/nsis-header.bmp \
   $(top_srcdir)/share/pixmaps/nsis-wizard.bmp \
   $(top_srcdir)/doc/README_windows.txt
+
+LINUX_PACKAGING = $(top_srcdir)/share/pixmaps/bytn16.xpm \
+  $(top_srcdir)/share/pixmaps/bytn32.xpm \
+  $(top_srcdir)/share/pixmaps/bytn128.png
 
 OSX_PACKAGING = $(OSX_DEPLOY_SCRIPT) $(OSX_FANCY_PLIST) $(OSX_INSTALLER_ICONS) \
   $(top_srcdir)/contrib/macdeploy/$(OSX_BACKGROUND_SVG) \
@@ -59,10 +66,10 @@ OSX_PACKAGING = $(OSX_DEPLOY_SCRIPT) $(OSX_FANCY_PLIST) $(OSX_INSTALLER_ICONS) \
   $(top_srcdir)/contrib/macdeploy/detached-sig-apply.sh \
   $(top_srcdir)/contrib/macdeploy/detached-sig-create.sh
 
-COVERAGE_INFO = baseline_filtered_combined.info baseline.info \
-  leveldb_baseline.info test_bytn_filtered.info total_coverage.info \
-  baseline_filtered.info rpc_test.info rpc_test_filtered.info \
-  leveldb_baseline_filtered.info test_bytn_coverage.info test_bytn.info
+COVERAGE_INFO = baseline.info \
+  test_bytn_filtered.info total_coverage.info \
+  baseline_filtered.info functional_test.info functional_test_filtered.info \
+  test_bytn_coverage.info test_bytn.info
 
 dist-hook:
 	-$(GIT) archive --format=tar HEAD -- src/clientversion.cpp | $(AMTAR) -C $(top_distdir) -xf -
@@ -82,7 +89,7 @@ $(OSX_APP)/Contents/PkgInfo:
 
 $(OSX_APP)/Contents/Resources/empty.lproj:
 	$(MKDIR_P) $(@D)
-	@touch $@ 
+	@touch $@
 
 $(OSX_APP)/Contents/Info.plist: $(OSX_PLIST)
 	$(MKDIR_P) $(@D)
@@ -92,9 +99,9 @@ $(OSX_APP)/Contents/Resources/bitcoin.icns: $(OSX_INSTALLER_ICONS)
 	$(MKDIR_P) $(@D)
 	$(INSTALL_DATA) $< $@
 
-$(OSX_APP)/Contents/MacOS/BYTN-Qt: $(BITCOIN_QT_BIN)
+$(OSX_APP)/Contents/MacOS/BYTN-Qt: all-recursive
 	$(MKDIR_P) $(@D)
-	STRIPPROG="$(STRIP)" $(INSTALL_STRIP_PROGRAM)  $< $@
+	STRIPPROG="$(STRIP)" $(INSTALL_STRIP_PROGRAM)  $(BITCOIN_QT_BIN) $@
 
 $(OSX_APP)/Contents/Resources/Base.lproj/InfoPlist.strings:
 	$(MKDIR_P) $(@D)
@@ -166,52 +173,45 @@ $(BITCOIN_CLI_BIN): FORCE
 	$(MAKE) -C src $(@F)
 
 if USE_LCOV
+LCOV_FILTER_PATTERN=-p "/usr/include/" -p "/usr/lib/" -p "src/leveldb/" -p "src/univalue" -p "src/secp256k1"
 
 baseline.info:
 	$(LCOV) -c -i -d $(abs_builddir)/src -o $@
 
 baseline_filtered.info: baseline.info
-	$(LCOV) -r $< "/usr/include/*" -o $@
+	$(abs_builddir)/contrib/filter-lcov.py $(LCOV_FILTER_PATTERN) $< $@
+	$(LCOV) -a $@ $(LCOV_OPTS) -o $@
 
-leveldb_baseline.info: baseline_filtered.info
-	$(LCOV) -c -i -d $(abs_builddir)/src/leveldb -b $(abs_builddir)/src/leveldb -o $@
-
-leveldb_baseline_filtered.info: leveldb_baseline.info
-	$(LCOV) -r $< "/usr/include/*" -o $@
-
-baseline_filtered_combined.info: leveldb_baseline_filtered.info baseline_filtered.info
-	$(LCOV) -a leveldb_baseline_filtered.info -a baseline_filtered.info -o $@
-
-test_bytn.info: baseline_filtered_combined.info
+test_bytn.info: baseline_filtered.info
 	$(MAKE) -C src/ check
-	$(LCOV) -c -d $(abs_builddir)/src -t test_bytn -o $@
-	$(LCOV) -z -d $(abs_builddir)/src
-	$(LCOV) -z -d $(abs_builddir)/src/leveldb
+	$(LCOV) -c $(LCOV_OPTS) -d $(abs_builddir)/src -t test_bytn -o $@
+	$(LCOV) -z $(LCOV_OPTS) -d $(abs_builddir)/src
 
 test_bytn_filtered.info: test_bytn.info
-	$(LCOV) -r $< "/usr/include/*" -o $@
+	$(abs_builddir)/contrib/filter-lcov.py $(LCOV_FILTER_PATTERN) $< $@
+	$(LCOV) -a $@ $(LCOV_OPTS) -o $@
 
-rpc_test.info: test_bytn_filtered.info
-	-@TIMEOUT=15 python qa/pull-tester/rpc-tests.py $(EXTENDED_RPC_TESTS)
-	$(LCOV) -c -d $(abs_builddir)/src --t rpc-tests -o $@
-	$(LCOV) -z -d $(abs_builddir)/src
-	$(LCOV) -z -d $(abs_builddir)/src/leveldb
+functional_test.info: test_bytn_filtered.info
+	-@TIMEOUT=15 test/functional/test_runner.py $(EXTENDED_FUNCTIONAL_TESTS)
+	$(LCOV) -c $(LCOV_OPTS) -d $(abs_builddir)/src --t functional-tests -o $@
+	$(LCOV) -z $(LCOV_OPTS) -d $(abs_builddir)/src
 
-rpc_test_filtered.info: rpc_test.info
-	$(LCOV) -r $< "/usr/include/*" -o $@
+functional_test_filtered.info: functional_test.info
+	$(abs_builddir)/contrib/filter-lcov.py $(LCOV_FILTER_PATTERN) $< $@
+	$(LCOV) -a $@ $(LCOV_OPTS) -o $@
 
-test_bytn_coverage.info: baseline_filtered_combined.info test_bytn_filtered.info
-	$(LCOV) -a baseline_filtered.info -a leveldb_baseline_filtered.info -a test_bytn_filtered.info -o $@
+test_bytn_coverage.info: baseline_filtered.info test_bytn_filtered.info
+	$(LCOV) -a $(LCOV_OPTS) baseline_filtered.info -a test_bytn_filtered.info -o $@
 
-total_coverage.info: baseline_filtered_combined.info test_bytn_filtered.info rpc_test_filtered.info
-	$(LCOV) -a baseline_filtered.info -a leveldb_baseline_filtered.info -a test_bytn_filtered.info -a rpc_test_filtered.info -o $@ | $(GREP) "\%" | $(AWK) '{ print substr($$3,2,50) "/" $$5 }' > coverage_percent.txt
+total_coverage.info: test_bytn_filtered.info functional_test_filtered.info
+	$(LCOV) -a $(LCOV_OPTS) baseline_filtered.info -a test_bytn_filtered.info -a functional_test_filtered.info -o $@ | $(GREP) "\%" | $(AWK) '{ print substr($$3,2,50) "/" $$5 }' > coverage_percent.txt
 
 test_bytn.coverage/.dirstamp:  test_bytn_coverage.info
-	$(GENHTML) -s $< -o $(@D)
+	$(GENHTML) -s $(LCOV_OPTS) $< -o $(@D)
 	@touch $@
 
 total.coverage/.dirstamp: total_coverage.info
-	$(GENHTML) -s $< -o $(@D)
+	$(GENHTML) -s $(LCOV_OPTS) $< -o $(@D)
 	@touch $@
 
 cov: test_bytn.coverage/.dirstamp total.coverage/.dirstamp
@@ -220,7 +220,32 @@ endif
 
 dist_noinst_SCRIPTS = autogen.sh
 
-EXTRA_DIST = $(top_srcdir)/share/genbuild.sh qa/pull-tester/rpc-tests.py qa/rpc-tests $(DIST_CONTRIB) $(DIST_DOCS) $(WINDOWS_PACKAGING) $(OSX_PACKAGING) $(BIN_CHECKS)
+EXTRA_DIST = $(DIST_SHARE) $(DIST_CONTRIB) $(DIST_DOCS) $(WINDOWS_PACKAGING) $(LINUX_PACKAGING) $(OSX_PACKAGING) $(BIN_CHECKS)
+
+EXTRA_DIST += \
+    test/functional
+
+EXTRA_DIST += \
+    test/util/bitcoin-util-test.py \
+    test/util/data/bitcoin-util-test.json \
+    test/util/data/blanktxv1.hex \
+    test/util/data/blanktxv1.json \
+    test/util/data/tt-delin1-out.hex \
+    test/util/data/tt-delin1-out.json \
+    test/util/data/tt-delout1-out.hex \
+    test/util/data/tt-delout1-out.json \
+    test/util/data/tt-locktime317000-out.hex \
+    test/util/data/tt-locktime317000-out.json \
+    test/util/data/tx394b54bb.hex \
+    test/util/data/txcreate1.hex \
+    test/util/data/txcreate1.json \
+    test/util/data/txcreate2.hex \
+    test/util/data/txcreate2.json \
+    test/util/data/txcreatescript1.hex \
+    test/util/data/txcreatescript1.json \
+    test/util/data/txcreatesign.hex \
+    test/util/data/txcreatesign.json \
+    test/util/rpcauth-test.py
 
 CLEANFILES = $(OSX_DMG) $(BITCOIN_WIN_INSTALLER)
 
@@ -228,6 +253,22 @@ CLEANFILES = $(OSX_DMG) $(BITCOIN_WIN_INSTALLER)
 
 DISTCHECK_CONFIGURE_FLAGS = --enable-man
 
-clean-local:
-	rm -rf coverage_percent.txt test_bytn.coverage/ total.coverage/ qa/tmp/ cache/ $(OSX_APP)
-	rm -rf qa/pull-tester/__pycache__
+doc/doxygen/.stamp: doc/Doxyfile FORCE
+	$(MKDIR_P) $(@D)
+	$(DOXYGEN) $^
+	$(AM_V_at) touch $@
+
+if HAVE_DOXYGEN
+docs: doc/doxygen/.stamp
+else
+docs:
+	@echo "error: doxygen not found"
+endif
+
+clean-docs:
+	rm -rf doc/doxygen
+
+clean-local: clean-docs
+	rm -rf coverage_percent.txt test_bytn.coverage/ total.coverage/ test/tmp/ cache/ $(OSX_APP)
+	rm -rf test/functional/__pycache__ test/functional/test_framework/__pycache__ test/cache share/rpcauth/__pycache__
+

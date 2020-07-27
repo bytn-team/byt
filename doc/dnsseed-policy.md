@@ -17,7 +17,7 @@ contracted by the operator are equally expected to uphold these expectations.
 
 1. The DNS seed results must consist exclusively of fairly selected and
 functioning BYTN nodes from the public network to the best of the
-operator's understanding and capability.
+operators understanding and capability.
 
 2. For the avoidance of doubt, the results may be randomized but must not
 single-out any group of hosts to receive different results unless due to an
@@ -43,11 +43,12 @@ related to the DNS seed operation.
 
 If these expectations cannot be satisfied the operator should
 discontinue providing services and contact the active BYTN
-Core development team.
+Core development team as well as posting on the
+[BYTN Forum](https://forum.bytn.org).
 
 Behavior outside of these expectations may be reasonable in some
 situations but should be discussed in public in advance.
 
 See also
 ----------
-- [bytn-seeder](https://github.com/nightlybytn/bytn-seeder) is a reference implementation of a DNS seed.
+- [bitcoin-seeder](https://github.com/sipa/bitcoin-seeder) is a reference implementation of a DNS seed.

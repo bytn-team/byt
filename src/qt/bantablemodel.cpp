@@ -1,4 +1,5 @@
 // Copyright (c) 2011-2015 The Bitcoin Core developers
+// Copyright (c) 2018 The PIVX developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -48,13 +49,10 @@ public:
     void refreshBanlist()
     {
         banmap_t banMap;
-        if(g_connman)
-            g_connman->GetBanned(banMap);
+        CNode::GetBanned(banMap);
 
         cachedBanlist.clear();
-#if QT_VERSION >= 0x040700
         cachedBanlist.reserve(banMap.size());
-#endif
         for (banmap_t::iterator it = banMap.begin(); it != banMap.end(); it++)
         {
             CCombinedBan banEntry;
@@ -64,7 +62,7 @@ public:
         }
 
         if (sortColumn >= 0)
-            // sort cachedBanlist (use stable sort to prevent rows jumping around unnecessarily)
+            // sort cachedBanlist (use stable sort to prevent rows jumping around unneceesarily)
             qStableSort(cachedBanlist.begin(), cachedBanlist.end(), BannedNodeLessThan(sortColumn, sortOrder));
     }
 

@@ -1,4 +1,5 @@
-// Copyright (c) 2012-2014 The Bitcoin Core developers
+// Copyright (c) 2012-2017 The Bitcoin Core developers
+// Copyright (c) 2016-2018 The PIVX developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -6,7 +7,6 @@
 
 #include "tinyformat.h"
 
-#include <string>
 
 /**
  * Name of client reported in the 'version' message. Report the same name
@@ -39,7 +39,7 @@ const std::string CLIENT_NAME("BYTN Core");
 
 //! First, include build.h if requested
 #ifdef HAVE_BUILD_INFO
-#include "build.h"
+#include "obj/build.h"
 #endif
 
 //! git will put "#define GIT_ARCHIVE 1" on the next line inside archives. 
@@ -68,9 +68,18 @@ const std::string CLIENT_NAME("BYTN Core");
 #endif
 #endif
 
-const std::string CLIENT_BUILD(BUILD_DESC CLIENT_VERSION_SUFFIX);
+#ifndef BUILD_DATE
+#ifdef GIT_COMMIT_DATE
+#define BUILD_DATE GIT_COMMIT_DATE
+#else
+#define BUILD_DATE __DATE__ ", " __TIME__
+#endif
+#endif
 
-std::string FormatVersion(int nVersion)
+const std::string CLIENT_BUILD(BUILD_DESC CLIENT_VERSION_SUFFIX);
+const std::string CLIENT_DATE(BUILD_DATE);
+
+static std::string FormatVersion(int nVersion)
 {
     if (nVersion % 100 == 0)
         return strprintf("%d.%d.%d", nVersion / 1000000, (nVersion / 10000) % 100, (nVersion / 100) % 100);
@@ -91,11 +100,10 @@ std::string FormatSubVersion(const std::string& name, int nClientVersion, const 
     std::ostringstream ss;
     ss << "/";
     ss << name << ":" << FormatVersion(nClientVersion);
-    if (!comments.empty())
-    {
+    if (!comments.empty()) {
         std::vector<std::string>::const_iterator it(comments.begin());
         ss << "(" << *it;
-        for(++it; it != comments.end(); ++it)
+        for (++it; it != comments.end(); ++it)
             ss << "; " << *it;
         ss << ")";
     }

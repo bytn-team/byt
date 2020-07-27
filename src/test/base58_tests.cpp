@@ -1,5 +1,6 @@
-// Copyright (c) 2011-2015 The Bitcoin Core developers
-// Distributed under the MIT software license, see the accompanying
+// Copyright (c) 2011-2014 The Bitcoin Core developers
+// Copyright (c) 2017-2019 The PIVX developers
+// Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include "base58.h"
@@ -15,7 +16,6 @@
 #include "utilstrencodings.h"
 #include "test/test_bytn.h"
 
-#include <boost/foreach.hpp>
 #include <boost/test/unit_test.hpp>
 
 #include <univalue.h>
@@ -79,7 +79,7 @@ class TestAddrTypeVisitor : public boost::static_visitor<bool>
 private:
     std::string exp_addrType;
 public:
-    TestAddrTypeVisitor(const std::string &_exp_addrType) : exp_addrType(_exp_addrType) { }
+    TestAddrTypeVisitor(const std::string &exp_addrType) : exp_addrType(exp_addrType) { }
     bool operator()(const CKeyID &id) const
     {
         return (exp_addrType == "pubkey");
@@ -100,7 +100,7 @@ class TestPayloadVisitor : public boost::static_visitor<bool>
 private:
     std::vector<unsigned char> exp_payload;
 public:
-    TestPayloadVisitor(std::vector<unsigned char> &_exp_payload) : exp_payload(_exp_payload) { }
+    TestPayloadVisitor(std::vector<unsigned char> &exp_payload) : exp_payload(exp_payload) { }
     bool operator()(const CKeyID &id) const
     {
         uint160 exp_key(exp_payload);
@@ -121,9 +121,9 @@ public:
 BOOST_AUTO_TEST_CASE(base58_keys_valid_parse)
 {
     UniValue tests = read_json(std::string(json_tests::base58_keys_valid, json_tests::base58_keys_valid + sizeof(json_tests::base58_keys_valid)));
+    std::vector<unsigned char> result;
     CBitcoinSecret secret;
     CBitcoinAddress addr;
-    SelectParams(CBaseChainParams::MAIN);
 
     for (unsigned int idx = 0; idx < tests.size(); idx++) {
         UniValue test = tests[idx];
@@ -172,12 +172,14 @@ BOOST_AUTO_TEST_CASE(base58_keys_valid_parse)
             BOOST_CHECK_MESSAGE(!secret.IsValid(), "IsValid pubkey as privkey:" + strTest);
         }
     }
+    SelectParams(CBaseChainParams::UNITTEST);
 }
 
 // Goal: check that generated keys match test vectors
 BOOST_AUTO_TEST_CASE(base58_keys_valid_gen)
 {
     UniValue tests = read_json(std::string(json_tests::base58_keys_valid, json_tests::base58_keys_valid + sizeof(json_tests::base58_keys_valid)));
+    std::vector<unsigned char> result;
 
     for (unsigned int idx = 0; idx < tests.size(); idx++) {
         UniValue test = tests[idx];
@@ -238,13 +240,14 @@ BOOST_AUTO_TEST_CASE(base58_keys_valid_gen)
     CTxDestination nodest = CNoDestination();
     BOOST_CHECK(!dummyAddr.Set(nodest));
 
-    SelectParams(CBaseChainParams::MAIN);
+    SelectParams(CBaseChainParams::UNITTEST);
 }
 
 // Goal: check that base58 parsing code is robust against a variety of corrupted data
 BOOST_AUTO_TEST_CASE(base58_keys_invalid)
 {
     UniValue tests = read_json(std::string(json_tests::base58_keys_invalid, json_tests::base58_keys_invalid + sizeof(json_tests::base58_keys_invalid))); // Negative testcases
+    std::vector<unsigned char> result;
     CBitcoinSecret secret;
     CBitcoinAddress addr;
 

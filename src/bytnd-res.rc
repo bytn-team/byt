@@ -17,11 +17,11 @@ BEGIN
         BLOCK "040904E4" // U.S. English - multilingual (hex)
         BEGIN
             VALUE "CompanyName",        "BYTN"
-            VALUE "FileDescription",    "bytnd (BYTN node with a JSON-RPC server)"
+            VALUE "FileDescription",    "bytnd (OSS daemon/client for BYTN)"
             VALUE "FileVersion",        VER_FILEVERSION_STR
             VALUE "InternalName",       "bytnd"
             VALUE "LegalCopyright",     COPYRIGHT_STR
-            VALUE "LegalTrademarks1",   "Distributed under the MIT software license, see the accompanying file COPYING or http://www.opensource.org/licenses/mit-license.php."
+            VALUE "LegalTrademarks1",   "Distributed under the MIT/X11 software license, see the accompanying file COPYING or http://www.opensource.org/licenses/mit-license.php."
             VALUE "OriginalFilename",   "bytnd.exe"
             VALUE "ProductName",        "bytnd"
             VALUE "ProductVersion",     VER_PRODUCTVERSION_STR

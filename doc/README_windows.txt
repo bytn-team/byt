@@ -1,4 +1,4 @@
-BYTN Core 0.14.0
+BYTN Core
 =====================
 
 Intro
@@ -17,7 +17,3 @@ BYTN Core is the original BYTN client and it builds the backbone of the network.
 However, it downloads and stores the entire history of BYTN transactions;
 depending on the speed of your computer and network connection, the synchronization
 process can take anywhere from a few hours to a day or more.
-
-See the BYTN documentation at:
-  https://docs.bytn.org
-for more help and information.

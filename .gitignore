@@ -1,3 +1,4 @@
+.gitignore
 *.sublime-project
 *.sublime-workspace
 todo.txt
@@ -12,7 +13,6 @@ src/bytn-cli
 src/bytn-tx
 src/test/test_bytn
 src/qt/test/test_bytn-qt
-src/bench/bench_bytn
 
 # autoreconf
 Makefile.in
@@ -34,12 +34,16 @@ build-aux/test-driver
 config.log
 config.status
 configure
+confdefs.h
+conftest.cpp
+conftest.err
 libtool
 src/config/bytn-config.h
 src/config/bytn-config.h.in
 src/config/stamp-h1
 share/setup.nsi
 share/qt/Info.plist
+contrib/devtools/split-debug.sh
 
 src/univalue/gen
 
@@ -48,7 +52,6 @@ src/qt/moc_*.cpp
 src/qt/forms/ui_*.h
 
 src/qt/test/moc*.cpp
-libconftest.dylib*
 
 .deps
 .dirstamp
@@ -62,7 +65,7 @@ libconftest.dylib*
 *.o
 *.o-*
 *.patch
-!depends/patches/*/*.patch
+.bytn
 *.a
 *.pb.cc
 *.pb.h
@@ -83,7 +86,7 @@ libconftest.dylib*
 Makefile
 bytn-qt
 BYTN-Qt.app
-!/depends/Makefile
+background.tiff*
 
 # Unit-tests
 Makefile.test
@@ -93,13 +96,15 @@ src/test/buildenv.py
 # Resources cpp
 qrc_*.cpp
 
+# Qt creator
+*.pro.user
+
 # Mac specific
 .DS_Store
 build
 
 #lcov
 *.gcno
-*.gcda
 /*.info
 test_bytn.coverage/
 total.coverage/
@@ -109,30 +114,21 @@ coverage_percent.txt
 linux-coverage-build
 linux-build
 win32-build
-qa/pull-tester/tests_config.py
-qa/pull-tester/tests_config.ini
-qa/cache/*
+test/config.ini
+test/cache/*
+qa/pull-tester/run-bitcoind-for-test.sh
+qa/pull-tester/tests-config.sh
+qa/pull-tester/cache/*
+qa/pull-tester/test.*/*
+cache/*
 
 !src/leveldb*/Makefile
 
 .cproject
 .project
-.autotools
 /doc/doxygen/
-
-libbytnconsensus.pc
-contrib/devtools/split-debug.sh
-src/qt/bytn-qt.bash
-qa/pull-tester/tests-config.sh
-
-#development symlinks
-bytn-cli
-bytnd
-bytn-qt
-make
-
-/docker/bin
-
-# CLion
+/nbproject/
+libbitcoinconsensus.pc
 .idea
+CMakeLists.txt
 cmake-build-debug

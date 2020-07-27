@@ -1,18 +1,22 @@
+// Copyright (c) 2014-2016 The Dash Developers
+// Copyright (c) 2016-2018 The PIVX developers
+// Distributed under the MIT software license, see the accompanying
+// file COPYING or http://www.opensource.org/licenses/mit-license.php.
+
 #ifndef MASTERNODELIST_H
 #define MASTERNODELIST_H
 
+#include "masternode.h"
 #include "platformstyle.h"
-#include "primitives/transaction.h"
 #include "sync.h"
 #include "util.h"
-
-#include "evo/deterministicmns.h"
 
 #include <QMenu>
 #include <QTimer>
 #include <QWidget>
 
-#define MASTERNODELIST_UPDATE_SECONDS 3
+#define MY_MASTERNODELIST_UPDATE_SECONDS 60
+#define MASTERNODELIST_UPDATE_SECONDS 15
 #define MASTERNODELIST_FILTER_COOLDOWN_SECONDS 3
 
 namespace Ui
@@ -33,47 +37,39 @@ class MasternodeList : public QWidget
     Q_OBJECT
 
 public:
-    explicit MasternodeList(const PlatformStyle* platformStyle, QWidget* parent = 0);
+    explicit MasternodeList(QWidget* parent = 0);
     ~MasternodeList();
 
     void setClientModel(ClientModel* clientModel);
     void setWalletModel(WalletModel* walletModel);
+    void StartAlias(std::string strAlias);
+    void StartAll(std::string strCommand = "start-all");
 
 private:
-    QMenu* contextMenuDIP3;
-    int64_t nTimeFilterUpdatedDIP3;
-    int64_t nTimeUpdatedDIP3;
-    bool fFilterUpdatedDIP3;
+    QMenu* contextMenu;
+    int64_t nTimeFilterUpdated;
+    bool fFilterUpdated;
 
+public Q_SLOTS:
+    void updateMyMasternodeInfo(QString strAlias, QString strAddr, CMasternode* pmn);
+    void updateMyNodeList(bool fForce = false);
+
+Q_SIGNALS:
+
+private:
     QTimer* timer;
     Ui::MasternodeList* ui;
     ClientModel* clientModel;
     WalletModel* walletModel;
-
-    // Protects tableWidgetMasternodesDIP3
-    CCriticalSection cs_dip3list;
-
-    QString strCurrentFilterDIP3;
-
-    bool mnListChanged;
-
-    CDeterministicMNCPtr GetSelectedDIP3MN();
-
-    void updateDIP3List();
-
-Q_SIGNALS:
-    void doubleClicked(const QModelIndex&);
+    CCriticalSection cs_mnlistupdate;
+    QString strCurrentFilter;
 
 private Q_SLOTS:
-    void showContextMenuDIP3(const QPoint&);
-    void on_filterLineEditDIP3_textChanged(const QString& strFilterIn);
-    void on_checkBoxMyMasternodesOnly_stateChanged(int state);
-
-    void extraInfoDIP3_clicked();
-    void copyProTxHash_clicked();
-    void copyCollateralOutpoint_clicked();
-
-    void handleMasternodeListChanged();
-    void updateDIP3ListScheduled();
+    void showContextMenu(const QPoint&);
+    void on_startButton_clicked();
+    void on_startAllButton_clicked();
+    void on_startMissingButton_clicked();
+    void on_tableWidgetMyMasternodes_itemSelectionChanged();
+    void on_UpdateButton_clicked();
 };
 #endif // MASTERNODELIST_H

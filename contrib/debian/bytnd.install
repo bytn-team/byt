@@ -1,2 +1,3 @@
 usr/local/bin/bytnd usr/bin
 usr/local/bin/bytn-cli usr/bin
+debian/examples/bytn.conf etc/bytn
